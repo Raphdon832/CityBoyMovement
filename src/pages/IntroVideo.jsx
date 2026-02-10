@@ -11,16 +11,23 @@ const IntroVideo = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [showOverlay, setShowOverlay] = useState(true);
 
+  // Autoplay on mount
   useEffect(() => {
-    const timer = setTimeout(() => setShowButton(true), 5000);
-    return () => clearTimeout(timer);
+    if (videoRef.current) {
+      videoRef.current.play().then(() => {
+        setIsPlaying(true);
+        setShowOverlay(false);
+      }).catch(() => {
+        // Autoplay blocked — user will use the play button
+      });
+    }
   }, []);
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       const { currentTime, duration } = videoRef.current;
       setProgress((currentTime / duration) * 100);
-      if (duration - currentTime <= 10) {
+      if (duration - currentTime <= 4) {
         setShowButton(true);
       }
     }
@@ -78,6 +85,7 @@ const IntroVideo = ({ onComplete }) => {
         <video
           ref={videoRef}
           muted={isMuted}
+          autoPlay
           playsInline
           onTimeUpdate={handleTimeUpdate}
           onEnded={() => setShowButton(true)}
@@ -85,10 +93,9 @@ const IntroVideo = ({ onComplete }) => {
             position: "absolute",
             top: "50%",
             left: "50%",
-            minWidth: "100%",
-            minHeight: "100%",
+            height: "100vw",
+            width: "100dvh",
             transform: "translate(-50%, -50%) rotate(90deg)",
-            transformOrigin: "center center",
             objectFit: "cover",
           }}
           poster=""
