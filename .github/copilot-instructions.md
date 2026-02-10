@@ -1,0 +1,5 @@
+- This is a React + Vite project using JavaScript
+- Uses react-router-dom for routing, recharts for charts, framer-motion for animations, lucide-react for icons
+- Light theme with Nigeria green (#006B3F) and gold (#C5960C) branding
+- Mobile-first design (430px max-width)
+- Run with `npm run dev`

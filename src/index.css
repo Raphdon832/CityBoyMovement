@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --primary-green: #006B3F;
+  --primary-green-light: #00894F;
+  --primary-green-dark: #004D2E;
+  --accent-gold: #C5960C;
+  --accent-gold-light: #E8B830;
+  --accent-gold-dark: #9A7500;
+  --white: #FFFFFF;
+  --off-white: #F8F9FA;
+  --light-gray: #F0F2F5;
+  --mid-gray: #E4E6EB;
+  --text-primary: #1A1A2E;
+  --text-secondary: #4A5568;
+  --text-muted: #718096;
+  --card-bg: #FFFFFF;
+  --card-shadow: none;
+  --card-shadow-hover: none;
+  --success: #2E7D32;
+  --warning: #F57F17;
+  --danger: #C62828;
+  --info: #1565C0;
+  --border-radius: 16px;
+  --border-radius-sm: 10px;
+  --border-radius-lg: 24px;
+  --btn-radius: 9999px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --max-width: 430px;
+  --navbar-height: 72px;
+  --font: 'Poppins', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font);
+  background: linear-gradient(135deg, #e8f0e8 0%, #f8f9fa 50%, #f0f0e0 100%);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-container {
+  width: 100%;
+  max-width: var(--max-width);
+  height: 100vh;
+  height: 100dvh;
+  background: var(--off-white);
+  position: relative;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    height: 92vh;
+    max-height: 920px;
+    border-radius: 32px;
+    border: 2px solid var(--mid-gray);
+  }
+}
+
+.page-content {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 100px;
+}
+
+@media (min-width: 768px) {
+  .page-content {
+    height: 92vh;
+    max-height: 920px;
+  }
+}
+
+.page-content::-webkit-scrollbar {
+  width: 3px;
+}
+
+.page-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+  background: var(--primary-green);
+  border-radius: 10px;
+}
+
+.flag-stripe {
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-green) 33%, var(--white) 33%, var(--white) 66%, var(--primary-green) 66%);
+}
+
+.section-title {
+  font-family: var(--font);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--primary-green), var(--accent-gold));
+  border-radius: 2px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
+  border: 1px solid rgba(0, 107, 63, 0.06);
+}
+
+.card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--btn-radius);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.badge-warning {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.badge-info {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--light-gray);
+  border-radius: var(--btn-radius);
+  margin-bottom: 16px;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--btn-radius);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.tab.active {
+  background: white;
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+button {
+  font-family: var(--font);
+}
+
+input {
+  font-family: var(--font);
+}
+
+textarea {
+  font-family: var(--font);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
