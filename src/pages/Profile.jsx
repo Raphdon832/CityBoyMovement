@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Edit3, User, FileText, ChevronRight, ChevronLeft, X,
   Settings, HelpCircle, LogOut, Shield, Bell, Save,
-  Loader2, Eye, EyeOff, Trash2, Info, MessageCircle,
+  Eye, EyeOff, Trash2, Info, MessageCircle,
   ExternalLink, Mail, Lock, Globe, Moon, Sun,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { deleteUser } from "firebase/auth";
 import { db } from "../firebase";
-import TinubuInsignia, { InsigniaWatermark } from "../components/TinubuInsignia";
+import TinubuInsignia, { InsigniaWatermark, InsigniaSpinner } from "../components/TinubuInsignia";
 
 /* ─── reusable slide-in panel ─── */
 const Panel = ({ title, open, onClose, children }) => (
@@ -153,7 +153,7 @@ const Profile = () => {
   if (loading) {
     return (
       <div className="page-content" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Loader2 size={32} color="var(--primary-green)" style={{ animation: "spin 1s linear infinite" }} />
+        <InsigniaSpinner size={60} />
       </div>
     );
   }
@@ -238,7 +238,7 @@ const Profile = () => {
                 cursor: "pointer", background: "#fff", color: "var(--text-primary)", fontSize: 15,
                 fontWeight: 600, width: "100%", maxWidth: 280, margin: "0 auto", opacity: authLoading ? 0.6 : 1,
               }}>
-                {authLoading ? <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> : (
+                {authLoading ? <InsigniaSpinner size={20} /> : (
                   <svg width="18" height="18" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -396,7 +396,7 @@ const Profile = () => {
             opacity: editSaving ? 0.6 : 1, transition: "background 0.2s",
           }}
         >
-          {editSaving ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> :
+          {editSaving ? <InsigniaSpinner size={18} /> :
             editSuccess ? <><Save size={16} /> Saved!</> : <><Save size={16} /> Save Changes</>}
         </button>
       </Panel>
@@ -498,7 +498,7 @@ const Profile = () => {
                   cursor: "pointer", opacity: deleting ? 0.6 : 1,
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                 }}>
-                  {deleting ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Trash2 size={14} />}
+                  {deleting ? <InsigniaSpinner size={16} /> : <Trash2 size={14} />}
                   Delete Forever
                 </button>
               </div>

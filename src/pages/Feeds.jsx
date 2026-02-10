@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, ThumbsUp, MessageCircle, CheckCircle, Clock, Eye,
-  Plus, X, Send, Loader2,
+  Plus, X, Send,
 } from "lucide-react";
 import {
   collection, query, orderBy, onSnapshot, addDoc, doc, updateDoc, increment,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
-import TinubuInsignia, { InsigniaWatermark } from "../components/TinubuInsignia";
+import TinubuInsignia, { InsigniaWatermark, InsigniaSpinner } from "../components/TinubuInsignia";
 
 // Fallback data when Firestore is empty or unavailable
 const fallbackFeeds = [
@@ -266,7 +266,7 @@ const Feeds = () => {
                       opacity: posting || !form.title.trim() ? 0.5 : 1,
                     }}
                   >
-                    {posting ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={14} />}
+                    {posting ? <InsigniaSpinner size={16} /> : <Send size={14} />}
                     {posting ? "Posting..." : "Publish"}
                   </button>
                 </div>
@@ -298,7 +298,7 @@ const Feeds = () => {
       {/* Loading state */}
       {fbLoading && (
         <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>
-          <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} />
+          <InsigniaSpinner size={48} />
           <p style={{ fontSize: 13, marginTop: 8 }}>Loading feeds...</p>
         </div>
       )}
