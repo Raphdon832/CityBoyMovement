@@ -73,6 +73,7 @@ const IntroVideo = ({ onComplete }) => {
         position: "absolute",
         inset: 0,
         zIndex: 1,
+        overflow: "hidden",
       }}>
         <video
           ref={videoRef}
@@ -81,8 +82,13 @@ const IntroVideo = ({ onComplete }) => {
           onTimeUpdate={handleTimeUpdate}
           onEnded={() => setShowButton(true)}
           style={{
-            width: "100%",
-            height: "100%",
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            minWidth: "100%",
+            minHeight: "100%",
+            transform: "translate(-50%, -50%) rotate(90deg)",
+            transformOrigin: "center center",
             objectFit: "cover",
           }}
           poster=""
