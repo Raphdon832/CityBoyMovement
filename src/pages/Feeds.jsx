@@ -85,6 +85,8 @@ const Feeds = () => {
   const [fbLoading, setFbLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
     author: "", handle: "", title: "", description: "", isOfficial: true,
   });
@@ -108,12 +110,23 @@ const Feeds = () => {
     return unsub;
   }, []);
 
-  const filteredFeeds =
-    activeTab === "official"
-      ? feeds.filter((f) => f.isOfficial)
-      : activeTab === "citizen"
-      ? feeds.filter((f) => !f.isOfficial)
-      : feeds;
+  const sq = searchQuery.trim().toLowerCase();
+
+  const filteredFeeds = feeds
+    .filter((f) => {
+      if (activeTab === "official") return f.isOfficial;
+      if (activeTab === "citizen") return !f.isOfficial;
+      return true;
+    })
+    .filter((f) => {
+      if (!sq) return true;
+      return (
+        (f.title || "").toLowerCase().includes(sq) ||
+        (f.description || "").toLowerCase().includes(sq) ||
+        (f.author || "").toLowerCase().includes(sq) ||
+        (f.handle || "").toLowerCase().includes(sq)
+      );
+    });
 
   const handlePost = async () => {
     if (!form.title.trim() || !form.description.trim()) return;
@@ -162,6 +175,10 @@ const Feeds = () => {
         justifyContent: "space-between",
         alignItems: "center",
         background: "#fff",
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+        borderBottom: "1px solid var(--light-gray)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <TinubuInsignia size={28} color="var(--primary-green)" secondaryColor="var(--accent-gold)" />
@@ -186,16 +203,69 @@ const Feeds = () => {
               {showForm ? <X size={18} color="#fff" /> : <Plus size={18} color="#fff" />}
             </button>
           )}
-          <button style={{
-            width: 40, height: 40, borderRadius: 9999,
-            border: "none", background: "var(--light-gray)",
-            display: "flex", alignItems: "center",
-            justifyContent: "center", cursor: "pointer",
-          }}>
-            <Search size={18} color="var(--text-secondary)" />
+          <button
+            onClick={() => { setShowSearch(!showSearch); if (showSearch) setSearchQuery(""); }}
+            style={{
+              width: 40, height: 40, borderRadius: 9999,
+              border: "none",
+              background: showSearch ? "var(--primary-green)" : "var(--light-gray)",
+              display: "flex", alignItems: "center",
+              justifyContent: "center", cursor: "pointer",
+            }}
+          >
+            {showSearch
+              ? <X size={18} color="#fff" />
+              : <Search size={18} color="var(--text-secondary)" />}
           </button>
         </div>
       </div>
+
+      {/* Search Bar */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: "hidden" }}
+          >
+            <div style={{ padding: "0 20px 12px" }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                background: "#fff", borderRadius: 9999, padding: "10px 18px",
+                border: `1px solid ${sq ? "var(--primary-green)" : "var(--mid-gray)"}`,
+                transition: "border-color 0.2s",
+              }}>
+                <Search size={16} color={sq ? "var(--primary-green)" : "var(--text-muted)"} />
+                <input
+                  autoFocus
+                  placeholder="Search feeds by title, author..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    border: "none", outline: "none", flex: 1,
+                    fontSize: 14, color: "var(--text-primary)",
+                    background: "transparent", fontFamily: "Poppins, sans-serif",
+                  }}
+                />
+                {sq && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 2, display: "flex" }}
+                  >
+                    <span style={{ fontSize: 16, color: "var(--text-muted)", fontWeight: 700 }}>×</span>
+                  </button>
+                )}
+              </div>
+              {sq && (
+                <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6, paddingLeft: 4 }}>
+                  {filteredFeeds.length} result{filteredFeeds.length !== 1 ? "s" : ""} found
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Admin New Post Form */}
       <AnimatePresence>
@@ -304,7 +374,18 @@ const Feeds = () => {
       )}
 
       {/* Feed Cards */}
-      {!fbLoading && (
+      {!fbLoading && filteredFeeds.length === 0 && (
+        <div style={{
+          textAlign: "center", padding: "40px 20px", color: "var(--text-muted)",
+        }}>
+          <Search size={40} color="var(--mid-gray)" style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, fontWeight: 600 }}>No feeds found</p>
+          <p style={{ fontSize: 12, marginTop: 4 }}>
+            {sq ? `No results for "${searchQuery}"` : "No reports in this category yet."}
+          </p>
+        </div>
+      )}
+      {!fbLoading && filteredFeeds.length > 0 && (
         <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 12 }}>
           {filteredFeeds.map((feed, index) => (
             <motion.div

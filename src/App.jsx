@@ -8,6 +8,7 @@ import Feeds from "./pages/Feeds";
 import Messages from "./pages/Messages";
 import SectorDetail from "./pages/SectorDetail";
 import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
 import BottomNav from "./components/BottomNav";
 
 function App() {
@@ -27,10 +28,11 @@ function App() {
         <div className="flag-stripe" />
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home onShowIntro={() => setIntroComplete(false)} />} />
             <Route path="/feeds" element={<Feeds />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/sector/:sectorId" element={<SectorDetail />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

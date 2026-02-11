@@ -7,7 +7,7 @@ import {
   Globe, TrendingDown, Coins, Route, Home as HomeIcon, Train,
   Shield, Target, GraduationCap, PieChart as PieChartIcon,
   Heart, Building, Baby, Wheat, DollarSign, Zap, Battery,
-  Fuel, Wifi, Laptop, Users, Activity,
+  Fuel, Wifi, Laptop, Users, Activity, Edit3, Settings,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -15,8 +15,13 @@ import {
   PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend,
   ComposedChart,
 } from "recharts";
-import { sectors } from "../data/sectors";
+import { useSingleSector } from "../hooks/useSectorData";
+import { useAuth } from "../contexts/AuthContext";
 import { InsigniaWatermark } from "../components/TinubuInsignia";
+import { InsigniaSpinner } from "../components/TinubuInsignia";
+import {
+  SectorInfoEditor, AchievementsEditor, ChartDataEditor, AdminEditButton,
+} from "../components/AdminSectorEditor";
 
 const CHART_COLORS = ["#006B3F", "#C5960C", "#1565C0", "#C62828", "#6A1B9A", "#E65100", "#00695C", "#F57F17"];
 
@@ -43,7 +48,8 @@ const AnimatedNumber = ({ value, suffix = "", prefix = "", duration = 2000 }) =>
 const SectorDetail = () => {
   const { sectorId } = useParams();
   const navigate = useNavigate();
-  const sector = sectors.find((s) => s.id === sectorId);
+  const { isAdmin } = useAuth();
+  const { sector, loading: sectorLoading, updateSector } = useSingleSector(sectorId);
   const [viewMode, setViewMode] = useState("video"); // video | text
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -51,10 +57,24 @@ const SectorDetail = () => {
   const [chartsVisible, setChartsVisible] = useState(false);
   const videoRef = useRef(null);
 
+  // Admin editor states
+  const [showInfoEditor, setShowInfoEditor] = useState(false);
+  const [showAchievementsEditor, setShowAchievementsEditor] = useState(false);
+  const [showChartEditor, setShowChartEditor] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => setChartsVisible(true), 500);
     return () => clearTimeout(timer);
   }, []);
+
+  if (sectorLoading) {
+    return (
+      <div className="page-content" style={{ padding: 40, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        <InsigniaSpinner size={36} />
+        <p style={{ fontSize: 14, color: "var(--text-muted)" }}>Loading sector data...</p>
+      </div>
+    );
+  }
 
   if (!sector) {
     return (
@@ -547,6 +567,19 @@ const SectorDetail = () => {
         }}>
           <BarChart3 size={18} color={sector.color} />
         </div>
+        {isAdmin && (
+          <button
+            onClick={() => setShowInfoEditor(true)}
+            style={{
+              width: 36, height: 36, borderRadius: 12,
+              background: "var(--primary-green)", border: "none",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", marginLeft: 6,
+            }}
+          >
+            <Edit3 size={16} color="#fff" />
+          </button>
+        )}
       </div>
 
       {/* View Mode Toggle */}
@@ -664,7 +697,24 @@ const SectorDetail = () => {
             </div>
 
             {/* Achievements */}
-            <h4 className="section-title" style={{ fontSize: 15 }}>Key Achievements</h4>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <h4 className="section-title" style={{ fontSize: 15, margin: 0 }}>Key Achievements</h4>
+              {isAdmin && (
+                <button
+                  onClick={() => setShowAchievementsEditor(true)}
+                  style={{
+                    padding: "5px 12px", borderRadius: 9999,
+                    background: "var(--primary-green)", color: "#fff",
+                    border: "none", fontSize: 11, fontWeight: 600,
+                    cursor: "pointer", fontFamily: "Poppins, sans-serif",
+                    display: "flex", alignItems: "center", gap: 4,
+                  }}
+                >
+                  <Edit3 size={11} /> Edit
+                </button>
+              )}
+            </div>
+            <div style={{ height: 8 }} />
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
               {sector.achievements.map((achievement, i) => (
                 <motion.div
@@ -700,13 +750,53 @@ const SectorDetail = () => {
 
       {/* Charts Section - always visible */}
       <div style={{ padding: "0 20px 24px" }}>
-        <h4 className="section-title" style={{ fontSize: 15 }}>
-          Performance Analytics
-        </h4>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h4 className="section-title" style={{ fontSize: 15, margin: 0 }}>
+            Performance Analytics
+          </h4>
+          {isAdmin && (
+            <button
+              onClick={() => setShowChartEditor(true)}
+              style={{
+                padding: "5px 12px", borderRadius: 9999,
+                background: "var(--primary-green)", color: "#fff",
+                border: "none", fontSize: 11, fontWeight: 600,
+                cursor: "pointer", fontFamily: "Poppins, sans-serif",
+                display: "flex", alignItems: "center", gap: 4,
+              }}
+            >
+              <Settings size={11} /> Edit Data
+            </button>
+          )}
+        </div>
+        <div style={{ height: 8 }} />
         {renderCharts()}
       </div>
 
       <div style={{ height: 20 }} />
+
+      {/* Admin Editor Modals */}
+      {showInfoEditor && (
+        <SectorInfoEditor
+          sector={sector}
+          onSave={updateSector}
+          onClose={() => setShowInfoEditor(false)}
+        />
+      )}
+      {showAchievementsEditor && (
+        <AchievementsEditor
+          sector={sector}
+          onSave={updateSector}
+          onClose={() => setShowAchievementsEditor(false)}
+        />
+      )}
+      {showChartEditor && (
+        <ChartDataEditor
+          sector={sector}
+          onSave={updateSector}
+          onClose={() => setShowChartEditor(false)}
+        />
+      )}
     </motion.div>
   );
 };

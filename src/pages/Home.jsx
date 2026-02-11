@@ -1,15 +1,22 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Bell, AlertTriangle, Search, TrendingUp, Building2, Shield,
+  Bell, Search, TrendingUp, Building2, Shield,
   GraduationCap, HeartPulse, Wheat, Zap, Laptop,
   BarChart3, Fuel, Landmark, Factory, Route, BookOpen,
+  Edit3, Settings,
 } from "lucide-react";
-import { sectors } from "../data/sectors";
+import { useSectorData } from "../hooks/useSectorData";
+import { useMilestones } from "../hooks/useMilestones";
+import { useAuth } from "../contexts/AuthContext";
 import TinubuInsignia, { InsigniaWatermark, InsigniaBadge } from "../components/TinubuInsignia";
+import { AdminEditButton, SectorInfoEditor } from "../components/AdminSectorEditor";
+import { MilestonesManager } from "../components/AdminMilestoneEditor";
 
 const iconMap = {
   TrendingUp, Building2, Shield, GraduationCap, HeartPulse, Wheat, Zap, Laptop,
+  Route, Factory, BookOpen, Fuel, BarChart3, Landmark,
 };
 
 const container = {
@@ -25,14 +32,43 @@ const item = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 200, damping: 20 } },
 };
 
-const Home = () => {
+const Home = ({ onShowIntro }) => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
+  const { sectors, updateSector } = useSectorData();
+  const { milestones, addMilestone, updateMilestone, deleteMilestone } = useMilestones();
   const hours = new Date().getHours();
   const greeting = hours < 12 ? "Good morning" : hours < 17 ? "Good afternoon" : "Good evening";
 
+  // Admin editing state
+  const [editingSector, setEditingSector] = useState(null);
+  const [showMilestonesManager, setShowMilestonesManager] = useState(false);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const q = searchQuery.trim().toLowerCase();
+
+  // Filter sectors & milestones based on search
+  const filteredSectors = q
+    ? sectors.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.tagline.toLowerCase().includes(q) ||
+          (s.summary && s.summary.toLowerCase().includes(q))
+      )
+    : sectors;
+
+  const filteredMilestones = q
+    ? milestones.filter(
+        (m) =>
+          m.title.toLowerCase().includes(q) ||
+          m.desc.toLowerCase().includes(q)
+      )
+    : milestones;
+
   const sectorPairs = [];
-  for (let i = 0; i < sectors.length; i += 2) {
-    sectorPairs.push(sectors.slice(i, i + 2));
+  for (let i = 0; i < filteredSectors.length; i += 2) {
+    sectorPairs.push(filteredSectors.slice(i, i + 2));
   }
 
   return (
@@ -53,24 +89,43 @@ const Home = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        background: "linear-gradient(180deg, #fff 0%, var(--off-white) 100%)",
-        position: "relative",
-        zIndex: 1,
+        background: "#fff",
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+        borderBottom: "1px solid var(--light-gray)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Replace emoji with Tinubu insignia in a circle */}
-          <div style={{
-            width: 48,
-            height: 48,
-            borderRadius: 9999,
-            background: "linear-gradient(135deg, #006B3F, #00894F)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "2px solid rgba(197,150,12,0.4)",
-          }}>
+          {/* Clickable insignia — returns to intro video */}
+          <motion.button
+            onClick={onShowIntro}
+            whileTap={{ scale: 0.9 }}
+            animate={{
+              boxShadow: [
+                "0 0 0 0 rgba(197,150,12,0.4)",
+                "0 0 0 8px rgba(197,150,12,0)",
+              ],
+            }}
+            transition={{
+              boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+            }}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 9999,
+              background: "linear-gradient(135deg, #006B3F, #00894F)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "2px solid rgba(197,150,12,0.4)",
+              cursor: "pointer",
+              padding: 0,
+              outline: "none",
+            }}
+            aria-label="Replay intro video"
+          >
             <TinubuInsignia size={30} color="#fff" secondaryColor="#E8B830" />
-          </div>
+          </motion.button>
           <div>
             <p style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>{greeting}</p>
             <h2 style={{
@@ -83,23 +138,19 @@ const Home = () => {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button style={{
-            width: 40, height: 40, borderRadius: 9999, border: "none",
-            background: "var(--light-gray)", display: "flex", alignItems: "center",
-            justifyContent: "center", cursor: "pointer", position: "relative",
-          }}>
+          <button
+            onClick={() => navigate("/notifications")}
+            style={{
+              width: 40, height: 40, borderRadius: 9999, border: "none",
+              background: "var(--light-gray)", display: "flex", alignItems: "center",
+              justifyContent: "center", cursor: "pointer", position: "relative",
+            }}
+          >
             <Bell size={18} color="var(--text-secondary)" />
             <span style={{
               position: "absolute", top: 6, right: 6, width: 8, height: 8,
               borderRadius: 9999, background: "#C62828", border: "2px solid #fff",
             }} />
-          </button>
-          <button style={{
-            width: 40, height: 40, borderRadius: 9999, border: "none",
-            background: "linear-gradient(135deg, #C5960C, #E8B830)", display: "flex",
-            alignItems: "center", justifyContent: "center", cursor: "pointer",
-          }}>
-            <AlertTriangle size={18} color="#fff" />
           </button>
         </div>
       </div>
@@ -109,18 +160,40 @@ const Home = () => {
         <div style={{
           display: "flex", alignItems: "center", gap: 10,
           background: "#fff", borderRadius: 9999, padding: "10px 18px",
-          border: "1px solid var(--mid-gray)",
+          border: `1px solid ${q ? "var(--primary-green)" : "var(--mid-gray)"}`,
+          transition: "border-color 0.2s",
         }}>
-          <Search size={18} color="var(--text-muted)" />
+          <Search size={18} color={q ? "var(--primary-green)" : "var(--text-muted)"} />
           <input
-            placeholder="Search sectors, reports..."
+            placeholder="Search sectors, milestones..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               border: "none", outline: "none", flex: 1,
               fontSize: 14, color: "var(--text-primary)",
               background: "transparent",
+              fontFamily: "Poppins, sans-serif",
             }}
           />
+          {q && (
+            <button
+              onClick={() => setSearchQuery("")}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                padding: 2, display: "flex",
+              }}
+            >
+              <span style={{ fontSize: 16, color: "var(--text-muted)", fontWeight: 700 }}>×</span>
+            </button>
+          )}
         </div>
+        {q && (
+          <p style={{
+            fontSize: 11, color: "var(--text-muted)", marginTop: 6, paddingLeft: 4,
+          }}>
+            {filteredSectors.length} sector{filteredSectors.length !== 1 ? "s" : ""} · {filteredMilestones.length} milestone{filteredMilestones.length !== 1 ? "s" : ""} found
+          </p>
+        )}
       </div>
 
       {/* Quick Stats Banner */}
@@ -217,7 +290,15 @@ const Home = () => {
 
       {/* Sectors Grid */}
       <div style={{ padding: "0 20px", position: "relative", zIndex: 1 }}>
-        <h3 className="section-title">Sector Performance</h3>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h3 className="section-title" style={{ margin: 0 }}>Sector Performance</h3>
+          {isAdmin && (
+            <span style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>
+              Tap card to edit
+            </span>
+          )}
+        </div>
+        <div style={{ height: 12 }} />
         <motion.div
           variants={container}
           initial="hidden"
@@ -248,6 +329,21 @@ const Home = () => {
                       justifyContent: "space-between",
                     }}
                   >
+                    {/* Admin edit button */}
+                    {isAdmin && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingSector(sector); }}
+                        style={{
+                          position: "absolute", top: 8, right: 8, zIndex: 2,
+                          width: 26, height: 26, borderRadius: 8,
+                          background: sector.color, border: "none",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Edit3 size={12} color="#fff" />
+                      </button>
+                    )}
                     {/* Faint insignia in card */}
                     <div style={{ position: "absolute", bottom: -5, right: -10, opacity: 0.06 }}>
                       <TinubuInsignia size={50} color={sector.color} secondaryColor={sector.color} />
@@ -280,47 +376,69 @@ const Home = () => {
             </div>
           ))}
         </motion.div>
+        {q && filteredSectors.length === 0 && (
+          <p style={{
+            textAlign: "center", color: "var(--text-muted)", fontSize: 13,
+            padding: "20px 0",
+          }}>
+            No sectors match "{searchQuery}"
+          </p>
+        )}
       </div>
 
       {/* Featured Achievements */}
       <div style={{ padding: "0 20px 24px", position: "relative", zIndex: 1 }}>
-        <h3 className="section-title">Key Milestones</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {[
-            { Icon: Route, title: "Lagos–Calabar Highway", desc: "700km coastal highway flagged off March 2024", color: "#E65100" },
-            { Icon: Factory, title: "Dangote Refinery", desc: "650,000 bpd — producing petrol domestically", color: "#F57F17" },
-            { Icon: BookOpen, title: "NELFUND Student Loans", desc: "900,000+ students funded across 238 institutions", color: "#6A1B9A" },
-            { Icon: Fuel, title: "Pi-CNG Initiative", desc: "100+ CNG conversion centres to cut fuel costs", color: "#33691E" },
-          ].map((milestone, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className="card"
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <h3 className="section-title" style={{ margin: 0 }}>Key Milestones</h3>
+          {isAdmin && (
+            <button
+              onClick={() => setShowMilestonesManager(true)}
               style={{
-                display: "flex", alignItems: "center", gap: 14,
-                borderLeft: `4px solid ${milestone.color}`,
+                padding: "6px 14px", borderRadius: 9999,
+                background: "var(--primary-green)", color: "#fff",
+                border: "none", fontSize: 11, fontWeight: 600,
+                cursor: "pointer", fontFamily: "Poppins, sans-serif",
+                display: "flex", alignItems: "center", gap: 5,
               }}
             >
-              <div style={{
-                width: 40, height: 40, borderRadius: 12,
-                background: `${milestone.color}15`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
-              }}>
-                <milestone.Icon size={20} color={milestone.color} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                  {milestone.title}
-                </h4>
-                <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
-                  {milestone.desc}
-                </p>
-              </div>
-            </motion.div>
-          ))}
+              <Settings size={12} /> Manage
+            </button>
+          )}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {filteredMilestones.map((milestone, i) => {
+            const MsIcon = iconMap[milestone.icon] || Route;
+            return (
+              <motion.div
+                key={milestone.id || i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                className="card"
+                style={{
+                  display: "flex", alignItems: "center", gap: 14,
+                  border: `2px solid ${milestone.color}`,
+                }}
+              >
+                <div style={{
+                  width: 40, height: 40, borderRadius: 12,
+                  background: `${milestone.color}15`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <MsIcon size={20} color={milestone.color} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+                    {milestone.title}
+                  </h4>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>
+                    {milestone.desc}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
@@ -338,6 +456,24 @@ const Home = () => {
       </div>
 
       <div style={{ height: 20 }} />
+
+      {/* Admin Modals */}
+      {editingSector && (
+        <SectorInfoEditor
+          sector={editingSector}
+          onSave={(data) => updateSector(editingSector.id, data)}
+          onClose={() => setEditingSector(null)}
+        />
+      )}
+      {showMilestonesManager && (
+        <MilestonesManager
+          milestones={milestones}
+          onAdd={addMilestone}
+          onUpdate={updateMilestone}
+          onDelete={deleteMilestone}
+          onClose={() => setShowMilestonesManager(false)}
+        />
+      )}
     </motion.div>
   );
 };

@@ -180,6 +180,8 @@ const Profile = () => {
       <div style={{
         padding: "16px 20px", display: "flex",
         justifyContent: "space-between", alignItems: "center", background: "#fff",
+        position: "sticky", top: 0, zIndex: 10,
+        borderBottom: "1px solid var(--light-gray)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <TinubuInsignia size={28} color="var(--primary-green)" secondaryColor="var(--accent-gold)" />

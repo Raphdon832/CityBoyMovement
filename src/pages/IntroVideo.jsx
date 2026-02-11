@@ -7,18 +7,30 @@ const IntroVideo = ({ onComplete }) => {
   const videoRef = useRef(null);
   const [showButton, setShowButton] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted
   const [progress, setProgress] = useState(0);
   const [showOverlay, setShowOverlay] = useState(true);
+  const hasPlayedOnce = useRef(false);
 
-  // Autoplay on mount
+  // Autoplay on mount (unmuted)
   useEffect(() => {
     if (videoRef.current) {
+      videoRef.current.muted = false; // try unmuted first
       videoRef.current.play().then(() => {
         setIsPlaying(true);
         setShowOverlay(false);
       }).catch(() => {
-        // Autoplay blocked — user will use the play button
+        // Autoplay blocked (browser policy) — fallback to muted autoplay
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          setIsMuted(true);
+          videoRef.current.play().then(() => {
+            setIsPlaying(true);
+            setShowOverlay(false);
+          }).catch(() => {
+            // Still blocked — user will use the play button
+          });
+        }
       });
     }
   }, []);
@@ -85,10 +97,19 @@ const IntroVideo = ({ onComplete }) => {
         <video
           ref={videoRef}
           muted={isMuted}
-          autoPlay
           playsInline
           onTimeUpdate={handleTimeUpdate}
-          onEnded={() => setShowButton(true)}
+          onEnded={() => {
+            setShowButton(true);
+            // Loop: replay muted from the second time onwards
+            if (videoRef.current) {
+              hasPlayedOnce.current = true;
+              videoRef.current.muted = true;
+              setIsMuted(true);
+              videoRef.current.currentTime = 0;
+              videoRef.current.play().catch(() => {});
+            }
+          }}
           style={{
             position: "absolute",
             top: "50%",
